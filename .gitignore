@@ -1,0 +1,9 @@
+build/
+output/
+*.o
+*.obj
+*.exe
+*.bin
+*.jsonl
+.DS_Store
+.vscode/

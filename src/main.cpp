@@ -90,13 +90,15 @@ FeatureRecord ExtractFeatures(const RawSample& sample) {
     double yaw_rate_norm = sample.yaw_rate / 0.3;
     double speed_square = speed_norm * speed_norm;
     double risk_motion = std::abs(accel_norm) + std::abs(yaw_rate_norm);
+    double speed_accel_interaction = speed_norm * accel_norm;
 
     record.features = {
         speed_norm,
         accel_norm,
         yaw_rate_norm,
         speed_square,
-        risk_motion
+        risk_motion,
+        speed_accel_interaction
     };
 
     return record;
