@@ -123,7 +123,7 @@ PredictionRecord RunFakeModel(const FeatureRecord& feature_record) {
         2.0;
 
     double probability = Sigmoid(score);
-    int prediction = probability >= 0.5 ? 1 : 0;
+    int prediction = probability >= 0.7 ? 1 : 0;
 
     PredictionRecord pred;
     pred.sample_id = feature_record.sample_id;
@@ -144,7 +144,7 @@ void ExportFeaturesToCsv(
         throw std::runtime_error("Failed to open output csv: " + output_path);
     }
 
-    fout << "sample_id,speed_norm,accel_norm,yaw_rate_norm,speed_square,risk_motion,label\n";
+    fout << "sample_id,speed_norm,accel_norm,yaw_rate_norm,speed_square,risk_motion,speed_accel_interaction,label\n";
 
     for (const auto& record : records) {
         fout << record.sample_id;
