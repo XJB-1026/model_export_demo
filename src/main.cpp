@@ -8,7 +8,8 @@
 #include <string>
 #include <vector>
 
-struct RawSample {
+struct RawSample
+{
     int sample_id{};
     double speed{};
     double accel{};
@@ -16,13 +17,15 @@ struct RawSample {
     int label{};
 };
 
-struct FeatureRecord {
+struct FeatureRecord
+{
     int sample_id{};
     std::vector<double> features;
     int label{};
 };
 
-struct PredictionRecord {
+struct PredictionRecord
+{
     int sample_id{};
     double score{};
     double probability{};
@@ -30,21 +33,25 @@ struct PredictionRecord {
     int label{};
 };
 
-std::vector<std::string> Split(const std::string& line, char delimiter) {
+std::vector<std::string> Split(const std::string &line, char delimiter)
+{
     std::vector<std::string> result;
     std::stringstream ss(line);
     std::string item;
 
-    while (std::getline(ss, item, delimiter)) {
+    while (std::getline(ss, item, delimiter))
+    {
         result.push_back(item);
     }
 
     return result;
 }
 
-std::vector<RawSample> LoadSamplesFromCsv(const std::string& csv_path) {
+std::vector<RawSample> LoadSamplesFromCsv(const std::string &csv_path)
+{
     std::ifstream fin(csv_path);
-    if (!fin.is_open()) {
+    if (!fin.is_open())
+    {
         throw std::runtime_error("Failed to open input csv: " + csv_path);
     }
 
@@ -54,13 +61,16 @@ std::vector<RawSample> LoadSamplesFromCsv(const std::string& csv_path) {
     // 跳过表头
     std::getline(fin, line);
 
-    while (std::getline(fin, line)) {
-        if (line.empty()) {
+    while (std::getline(fin, line))
+    {
+        if (line.empty())
+        {
             continue;
         }
 
         auto cols = Split(line, ',');
-        if (cols.size() != 5) {
+        if (cols.size() != 5)
+        {
             std::cerr << "Skip invalid line: " << line << std::endl;
             continue;
         }
@@ -78,7 +88,8 @@ std::vector<RawSample> LoadSamplesFromCsv(const std::string& csv_path) {
     return samples;
 }
 
-FeatureRecord ExtractFeatures(const RawSample& sample) {
+FeatureRecord ExtractFeatures(const RawSample &sample)
+{
     FeatureRecord record;
     record.sample_id = sample.sample_id;
     record.label = sample.label;
@@ -98,18 +109,19 @@ FeatureRecord ExtractFeatures(const RawSample& sample) {
         yaw_rate_norm,
         speed_square,
         risk_motion,
-        speed_accel_interaction
-    };
+        speed_accel_interaction};
 
     return record;
 }
 
-double Sigmoid(double x) {
+double Sigmoid(double x)
+{
     return 1.0 / (1.0 + std::exp(-x));
 }
 
-PredictionRecord RunFakeModel(const FeatureRecord& feature_record) {
-    const auto& f = feature_record.features;
+PredictionRecord RunFakeModel(const FeatureRecord &feature_record)
+{
+    const auto &f = feature_record.features;
 
     // 模拟一个线性模型：
     // score = w0*x0 + w1*x1 + ...
@@ -136,20 +148,23 @@ PredictionRecord RunFakeModel(const FeatureRecord& feature_record) {
 }
 
 void ExportFeaturesToCsv(
-    const std::vector<FeatureRecord>& records,
-    const std::string& output_path
-) {
+    const std::vector<FeatureRecord> &records,
+    const std::string &output_path)
+{
     std::ofstream fout(output_path);
-    if (!fout.is_open()) {
+    if (!fout.is_open())
+    {
         throw std::runtime_error("Failed to open output csv: " + output_path);
     }
 
     fout << "sample_id,speed_norm,accel_norm,yaw_rate_norm,speed_square,risk_motion,speed_accel_interaction,label\n";
 
-    for (const auto& record : records) {
+    for (const auto &record : records)
+    {
         fout << record.sample_id;
 
-        for (double value : record.features) {
+        for (double value : record.features)
+        {
             fout << "," << std::fixed << std::setprecision(6) << value;
         }
 
@@ -158,15 +173,17 @@ void ExportFeaturesToCsv(
 }
 
 void ExportPredictionsToJsonl(
-    const std::vector<PredictionRecord>& records,
-    const std::string& output_path
-) {
+    const std::vector<PredictionRecord> &records,
+    const std::string &output_path)
+{
     std::ofstream fout(output_path);
-    if (!fout.is_open()) {
+    if (!fout.is_open())
+    {
         throw std::runtime_error("Failed to open output jsonl: " + output_path);
     }
 
-    for (const auto& record : records) {
+    for (const auto &record : records)
+    {
         fout << "{"
              << "\"sample_id\":" << record.sample_id << ","
              << "\"score\":" << std::fixed << std::setprecision(6) << record.score << ","
@@ -178,11 +195,12 @@ void ExportPredictionsToJsonl(
 }
 
 void ExportFeaturesToBinary(
-    const std::vector<FeatureRecord>& records,
-    const std::string& output_path
-) {
+    const std::vector<FeatureRecord> &records,
+    const std::string &output_path)
+{
     std::ofstream fout(output_path, std::ios::binary);
-    if (!fout.is_open()) {
+    if (!fout.is_open())
+    {
         throw std::runtime_error("Failed to open output binary: " + output_path);
     }
 
@@ -191,26 +209,31 @@ void ExportFeaturesToBinary(
     int sample_count = static_cast<int>(records.size());
     int feature_dim = records.empty() ? 0 : static_cast<int>(records[0].features.size());
 
-    fout.write(reinterpret_cast<const char*>(&magic_number), sizeof(int));
-    fout.write(reinterpret_cast<const char*>(&version), sizeof(int));
-    fout.write(reinterpret_cast<const char*>(&sample_count), sizeof(int));
-    fout.write(reinterpret_cast<const char*>(&feature_dim), sizeof(int));
+    fout.write(reinterpret_cast<const char *>(&magic_number), sizeof(int));
+    fout.write(reinterpret_cast<const char *>(&version), sizeof(int));
+    fout.write(reinterpret_cast<const char *>(&sample_count), sizeof(int));
+    fout.write(reinterpret_cast<const char *>(&feature_dim), sizeof(int));
 
-    for (const auto& record : records) {
-        fout.write(reinterpret_cast<const char*>(&record.sample_id), sizeof(int));
+    for (const auto &record : records)
+    {
+        fout.write(reinterpret_cast<const char *>(&record.sample_id), sizeof(int));
 
-        for (double value : record.features) {
+        for (double value : record.features)
+        {
             float v = static_cast<float>(value);
-            fout.write(reinterpret_cast<const char*>(&v), sizeof(float));
+            fout.write(reinterpret_cast<const char *>(&v), sizeof(float));
         }
 
-        fout.write(reinterpret_cast<const char*>(&record.label), sizeof(int));
+        fout.write(reinterpret_cast<const char *>(&record.label), sizeof(int));
     }
 }
 
-int main(int argc, char* argv[]) {
-    try {
-        if (argc < 3) {
+int main(int argc, char *argv[])
+{
+    try
+    {
+        if (argc < 3)
+        {
             std::cout << "Usage:\n"
                       << "  model_export <input_csv> <output_dir>\n\n"
                       << "Example:\n"
@@ -230,7 +253,8 @@ int main(int argc, char* argv[]) {
         std::vector<FeatureRecord> feature_records;
         feature_records.reserve(samples.size());
 
-        for (const auto& sample : samples) {
+        for (const auto &sample : samples)
+        {
             feature_records.push_back(ExtractFeatures(sample));
         }
 
@@ -238,26 +262,45 @@ int main(int argc, char* argv[]) {
         std::vector<PredictionRecord> prediction_records;
         prediction_records.reserve(feature_records.size());
 
-        for (const auto& feature_record : feature_records) {
+        for (const auto &feature_record : feature_records)
+        {
             prediction_records.push_back(RunFakeModel(feature_record));
         }
+        // 统计准确率
+        int correct = 0;
+
+        for (const auto &pred : prediction_records)
+        {
+            if (pred.prediction == pred.label)
+            {
+                correct++;
+            }
+        }
+
+        double accuracy = 0.0;
+        if (!prediction_records.empty())
+        {
+            accuracy = static_cast<double>(correct) / prediction_records.size();
+        }
+
+        std::cout << "[Accuracy] "
+                  << correct << " / " << prediction_records.size()
+                  << " = " << accuracy
+                  << std::endl;
 
         std::cout << "[4] Exporting files..." << std::endl;
 
         ExportFeaturesToCsv(
             feature_records,
-            output_dir + "/features.csv"
-        );
+            output_dir + "/features.csv");
 
         ExportPredictionsToJsonl(
             prediction_records,
-            output_dir + "/predictions.jsonl"
-        );
+            output_dir + "/predictions.jsonl");
 
         ExportFeaturesToBinary(
             feature_records,
-            output_dir + "/features.bin"
-        );
+            output_dir + "/features.bin");
 
         std::cout << "\nExport finished successfully.\n";
         std::cout << "Generated files:\n";
@@ -266,7 +309,9 @@ int main(int argc, char* argv[]) {
         std::cout << "  " << output_dir << "/features.bin\n";
 
         return 0;
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception &e)
+    {
         std::cerr << "Error: " << e.what() << std::endl;
         return 2;
     }
